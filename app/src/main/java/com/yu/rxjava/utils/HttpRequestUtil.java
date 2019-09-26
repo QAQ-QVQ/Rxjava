@@ -7,7 +7,8 @@ import android.telephony.TelephonyManager;
 import android.util.Base64;
 import android.util.Log;
 
-import com.renard.common.google.gson.Gson;
+
+import com.google.gson.Gson;
 
 import java.io.IOException;
 import java.security.SignatureException;
@@ -17,9 +18,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.FormBody;
@@ -237,18 +236,18 @@ public class HttpRequestUtil {
         if (action.isEmpty()){
             request = new Request.Builder().url(url)
                     .post(requestBody)
-                    .addHeader("Authorization",generateJwt(aid,gid))
+
                     .build();
         }else if (action.equals("pay")){
             request = new Request.Builder().url(url).addHeader("referer","http://issue.hjygame.com")
                     .addHeader("User-Agent","hjygameapp")
-                    .addHeader("Authorization",generateJwt(aid,gid))
+
                     .post(requestBody).build();
         }
         else {
             request = new Request.Builder().url(url).addHeader("referer","http://issue.hjygame.com")
                     .addHeader("User-Agent","hjygamewap")
-                    .addHeader("Authorization",generateJwt(aid,gid))
+
                     .post(requestBody).build();
         }
         okHttpClient.newCall(request).enqueue(new Callback() {
@@ -273,26 +272,7 @@ public class HttpRequestUtil {
         });
     }
 
-    private String generateJwt(String aid,String gid) {
-//        TelephonyManager tm = (TelephonyManager)getSystemService(Context.TELEPHONY_SERVICE);
-//        String DEVICE_ID = tm.getDeviceId();
-        Map<String, Object> map = new HashMap<String, Object>();
-        map.put("gameId", aid);
-        map.put("partnerId", gid);
-//        map.put("deviceId", DeviceUtils.getUniqueDeviceId());
-        String key = Base64.encodeToString("f23e89f1eed190db1c3a90c01bdbcaa8".getBytes(), 0);
-        //Key key = MacProvider.generateKey(SignatureAlgorithm.HS256);
-//        Date exp = new Date(System.currentTimeMillis() + 60 * 1000);//过期时间
-        String compactJws = Jwts.builder().addClaims(map).setHeaderParam("typ", "JWT")
-                .signWith(SignatureAlgorithm.HS256, key).compact();
-        try {
-            Jwts.parser().setSigningKey(key).parseClaimsJws(compactJws);
-            //OK, we can trust this JWT
-        }  catch (ExpiredJwtException e) {//The key is expiration
-            e.printStackTrace();
-        }
-        return compactJws;
-    }
+
 
     private void inner_PostJsonAsync(String url, Map<String, String> params, final DataCallBack callBack) {
 
